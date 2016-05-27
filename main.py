@@ -1,9 +1,12 @@
-#  A welcome programme specific to the group for Lab Session 4
-#  Written by: Peter Cheung  Version: 1.0  25 May 2016
+# DE-EA1.3 Electronics Group Project
+# Init on 27 May 2016
+# Authors: Benedict Greenberg
+# Version: 0.1
+
 import machine
 import pyb
 
-print('This is main.py')
+print('main.py Running')
 
 def start():
     choice = input('Please type in the name of a script: ')
