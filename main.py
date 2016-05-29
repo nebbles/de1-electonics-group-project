@@ -1,7 +1,7 @@
 # DE-EA1.3 Electronics Group Project
 # Init on 27 May 2016
 # Authors: Benedict Greenberg
-# Version: 0.1
+# Version: 0.2
 
 import machine
 import pyb
@@ -9,27 +9,15 @@ import pyb
 print('main.py Running')
 
 def start():
-    choice = input('Please type in the name of a script: ')
+    choice = input('Type mode: ')
 
-    if choice == 'task1':
-        execfile('task1.py')
-    elif choice == 'task2':
-        execfile('task2.py')
-    elif choice == 'task3':
-        execfile('task3.py')
-    elif choice == 'task4':
-        execfile('task4.py')
-    elif choice == 'task5':
-        execfile('task5.py')
-    elif choice == 'task6':
-        execfile('task6.py')
-    elif choice == 'task7':
-        execfile('task7.py')
-    elif choice == 'task8':
-        execfile('task8.py')
-    elif choice == 'task9':
-        execfile('task9.py')
+    if choice == 'help':
+        print('- Help Menu -\nHere are the options available to you:')
+        print('autodrive')
+        
+    elif choice == 'autodrive':
+        execfile('autodrive.py')
     else:
-        print('You did not type a valid script name. Please try again.')
+        print('You did not type a valid mode name. Please try again, or try typing help')
         start()
 start()
