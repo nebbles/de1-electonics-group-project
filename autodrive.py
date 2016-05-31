@@ -32,8 +32,7 @@ end = 0					# timestamp at falling edge of echo
 
 # -----------------------------------------------------------------
 
-def drive(): # Set direction to forward
-	global speed #import the standard drive speed
+def drive(speed): # Set direction to forward
 
 	A1.high()
 	A2.low()
@@ -44,8 +43,7 @@ def drive(): # Set direction to forward
 	ch1.pulse_width_percent(speed) # send a pulse of width 50% to motor1
 	ch2.pulse_width_percent(speed) # send a pulse of width 50% to motor2
 
-def preventCollision():
-	global speed # Import the standard driving speed
+def preventCollision(speed):
 
 	# slowdown
 	while speed > 0:
@@ -65,7 +63,7 @@ def preventCollision():
 	A3.low()
 	A4.high()
 
-	# set motor1: 10%, motor2: 3%
+	# set motor1: -15%, motor2: -5%
 	ch1.pulse_width_percent(-15)
 	ch2.pulse_width_percent(-5)
 
@@ -78,6 +76,8 @@ def preventCollision():
 
 	# run drive() func (which should correct the motor direction)
 	drive()
+
+drive(speed) # begin the drive
 
 while True: # Distance feedback loop
 	# Send a 20usec pulse every 10ms
@@ -98,6 +98,6 @@ while True: # Distance feedback loop
 	print('Distance: ', distance, ' cm')
 
 	if distance <= critdistance:
-		preventCollision()
+		preventCollision(speed)
 
 	pyb.delay(500) # delay 500 millisec before repeating loop
