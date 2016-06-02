@@ -17,9 +17,9 @@ A3 = Pin('Y11',Pin.OUT_PP)
 A4 = Pin('Y12',Pin.OUT_PP)
 motor2 = Pin('X2')
 
-tim = Timer(2, freq = 1000)
+tim = Timer(1, freq = 1000)
 ch1 = tim.channel(1, Timer.PWM, pin = motor1)
-ch2 = tim.channel(1, Timer.PWM, pin = motor2)
+ch2 = tim.channel(2, Timer.PWM, pin = motor2)
 
 # Ultrasound Echo Initialising -----------------------------------
 Trigger = Pin('X3', Pin.OUT_PP)
@@ -63,9 +63,11 @@ def preventCollision(speed):
 	A3.low()
 	A4.high()
 
-	# set motor1: -15%, motor2: -5%
-	ch1.pulse_width_percent(-15)
-	ch2.pulse_width_percent(-5)
+	# set motor1: 15%, motor2: 5%
+	# motor direction has already been reversed
+	# pulse width cannot be negative
+	ch1.pulse_width_percent(15)
+	ch2.pulse_width_percent(5)
 
 	# run to allow reverse
 	pyb.delay(3000) # 3000 millisec
@@ -74,8 +76,8 @@ def preventCollision(speed):
 	ch1.pulse_width_percent(0)
 	ch2.pulse_width_percent(0)
 
-	# run drive() func (which should correct the motor direction)
-	drive()
+	# run drive(at 50%) func (which should correct the motor direction)
+	drive(50)
 
 drive(speed) # begin the drive
 
