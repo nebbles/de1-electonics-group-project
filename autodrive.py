@@ -13,8 +13,8 @@ A1 = Pin('Y9',Pin.OUT_PP)
 A2 = Pin('Y10',Pin.OUT_PP)
 motor1 = Pin('X1')
 
-A3 = Pin('Y11',Pin.OUT_PP)
-A4 = Pin('Y12',Pin.OUT_PP)
+B1 = Pin('Y11',Pin.OUT_PP)
+B2 = Pin('Y12',Pin.OUT_PP)
 motor2 = Pin('X2')
 
 tim = Timer(1, freq = 1000)
@@ -37,8 +37,8 @@ def drive(speed): # Set direction to forward
 	A1.high()
 	A2.low()
 
-	A3.high()
-	A4.low()
+	B1.high()
+	B2.low()
 
 	ch1.pulse_width_percent(speed) # send a pulse of width 50% to motor1
 	ch2.pulse_width_percent(speed) # send a pulse of width 50% to motor2
@@ -60,8 +60,8 @@ def preventCollision(speed):
 	A1.low()
 	A2.high()
 
-	A3.low()
-	A4.high()
+	B1.low()
+	B2.high()
 
 	# set motor1: 15%, motor2: 5%
 	# motor direction has already been reversed
