@@ -34,6 +34,10 @@ start = 0				# timestamp at rising edge of echo
 end = 0					# timestamp at falling edge of echo
 
 # -----------------------------------------------------------------
+#initialise UART communication
+uart = UART(6)
+uart.init(9600, bits=8, parity = None, stop = 2)
+# -----------------------------------------------------------------
 
 def direction(direction, speedL, speedR):
     # if speed is not zero then the car should stop first
@@ -103,13 +107,13 @@ def setspeed(speedL,speedR):
     	ch1.pulse_width_percent(speedL) # send a pulse of width 50% to motor1
     	ch2.pulse_width_percent(speedR) # send a pulse of width 50% to motor2
 
-def turn(direction, speedL, speedR):
-    if direction == 'l':
+def turn(turnDirection, speedL, speedR):
+    if turnDirection == 'l':
         if speedL > 4 and speedR <96:
             speedL -= 5
             speedR += 5
 
-    elif direction == 'r':
+    elif turnDirection == 'r':
         if speedL <96 and speedR >4:
             speedL += 5
             speedR -= 5
@@ -119,3 +123,39 @@ def turn(direction, speedL, speedR):
 
 
 # loop
+# Use keypad U and D keys to control speed
+while True:				# loop forever until CTRL-C
+	while (uart.any()!=10):    #wait we get 10 chars
+		n = uart.any()
+	command = uart.read(10)
+
+    if command[2] == ord('1'): # record
+        print('Command not available yet')
+    elif command[2] == ord('2'): # play
+        print('Command not available yet')
+    elif command[2] == ord('3'): # change direction
+        if direction == 'f':
+            (direction,speedL,speedR) = direction(direction='b',speedL=speedL,speedR=speedR)
+            print(speedL,speedR,direction)
+        elif direction == 'b':
+            (direction,speedL,speedR) = direction(direction='f',speedL=speedL,speedR=speedR)
+            print(speedL,speedR,direction)
+    elif command[2] == ord('4'): # emergency stop
+        (speedL,speedR) = stop()
+        print(speedL,speedR)
+    elif command[2] == ord('5'): # UP pressed
+        (speedL,speedR) = speed(direction,inc,speedL,speedR)
+        print(speedL,speedR,direction)
+    elif command[2] == ord('6'): # DOWN PRESSED
+		(speedL,speedR) = speed(direction=direction,mode=dec,speedL=speedL=,speedR=speedR)
+        print(speedL,speedR,direction)
+    elif command[2] == ord('7'): #LEFT PRESSED
+        (speedL,speedR) = turn(turnDirection='l',speedL=speedL,speedR=speedR)
+        print(speedL,speedR,direction)
+
+    elif command[2] == ord('8'): # RIGHT PRESSED
+        (speedL,speedR) = turn(turnDirection='r',speedL=speedL,speedR=speedR)
+        print(speedL,speedR,direction)
+	else:
+		A1.low()		# idle
+		A2.low()
