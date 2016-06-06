@@ -1,5 +1,5 @@
 print('Initialising Autodrive Module')
-print('Version 0.1')
+print('Version 1.0')
 
 from pyb import Pin, ADC, Timer
 
