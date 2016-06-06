@@ -17,7 +17,7 @@ B1 = Pin('Y11',Pin.OUT_PP)
 B2 = Pin('Y12',Pin.OUT_PP)
 motor2 = Pin('X2')
 
-tim = Timer(1, freq = 1000)
+tim = Timer(2, freq = 1000)
 ch1 = tim.channel(1, Timer.PWM, pin = motor1)
 ch2 = tim.channel(2, Timer.PWM, pin = motor2)
 
@@ -25,7 +25,7 @@ ch2 = tim.channel(2, Timer.PWM, pin = motor2)
 Trigger = Pin('X3', Pin.OUT_PP)
 Echo = Pin('X4',Pin.IN)
 # Create a microseconds counter.
-micros = pyb.Timer(2, prescaler=83, period=0x3fffffff)
+micros = pyb.Timer(5, prescaler=83, period=0x3fffffff)
 micros.counter(0)
 start = 0				# timestamp at rising edge of echo
 end = 0					# timestamp at falling edge of echo
