@@ -21,6 +21,9 @@ def start():
     elif choice == 'task5':
         execfile('lab4/task5.py')
 
+    elif choice == 'pilot':
+        execfile('pilot.py')
+
     else:
         print('You did not type a valid mode name. Please try again, or try typing help')
         start()
