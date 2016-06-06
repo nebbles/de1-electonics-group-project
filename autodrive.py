@@ -37,8 +37,8 @@ def drive(speed): # Set direction to forward
 	A1.high()
 	A2.low()
 
-	B1.high()
-	B2.low()
+	B1.low()
+	B2.high()
 
 	ch1.pulse_width_percent(speed) # send a pulse of width 50% to motor1
 	ch2.pulse_width_percent(speed) # send a pulse of width 50% to motor2
@@ -60,22 +60,23 @@ def preventCollision(speed):
 	A1.low()
 	A2.high()
 
-	B1.low()
-	B2.high()
+	B1.high()
+	B2.low()
 
 	# set motor1: 15%, motor2: 5%
 	# motor direction has already been reversed
 	# pulse width cannot be negative
-	ch1.pulse_width_percent(15)
-	ch2.pulse_width_percent(5)
+	ch1.pulse_width_percent(40)
+	ch2.pulse_width_percent(20)
 
 	# run to allow reverse
-	pyb.delay(3000) # 3000 millisec
+	pyb.delay(4000) # x millisec
 
 	# stop
 	ch1.pulse_width_percent(0)
 	ch2.pulse_width_percent(0)
 
+	pyb.delay(1000)
 	# run drive(at 50%) func (which should correct the motor direction)
 	drive(50)
 
