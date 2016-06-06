@@ -14,9 +14,13 @@ def start():
     if choice == 'help':
         print('- Help Menu -\nHere are the options available to you:')
         print('autodrive')
-        
+
     elif choice == 'autodrive':
         execfile('autodrive.py')
+
+    elif choice == 'task5':
+        execfile('lab4/task5.py')
+
     else:
         print('You did not type a valid mode name. Please try again, or try typing help')
         start()
