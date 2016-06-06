@@ -14,6 +14,8 @@ def start():
     if choice == 'help':
         print('- Help Menu -\nHere are the options available to you:')
         print('autodrive')
+        print('task5')
+        print('pilot')
 
     elif choice == 'autodrive':
         execfile('autodrive.py')
