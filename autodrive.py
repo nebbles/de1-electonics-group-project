@@ -63,15 +63,22 @@ def preventCollision(speed):
 	B1.high()
 	B2.low()
 
-	# set motor1: 15%, motor2: 5%
+	# set motor1: 15%, motor2: 15%
 	# motor direction has already been reversed
 	# pulse width cannot be negative
 	ch1.pulse_width_percent(40)
-	ch2.pulse_width_percent(20)
+	ch2.pulse_width_percent(40)
 
 	# run to allow reverse
-	pyb.delay(4000) # x millisec
+	pyb.delay(3500) # x millisec
 
+	# turn on the spot 
+	ch1.pulse_width_percent(0)
+	ch2.pulse_width_percent(40)
+
+	# run to allow the turn
+	pyb.delay(1250)
+	
 	# stop
 	ch1.pulse_width_percent(0)
 	ch2.pulse_width_percent(0)
