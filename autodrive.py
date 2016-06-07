@@ -81,7 +81,7 @@ def preventCollision(speed):
 	ch2.pulse_width_percent(40)
 
 	# run to allow the turn
-	pyb.delay(1250)
+	pyb.delay(800)
 	
 	# stop
 	ch1.pulse_width_percent(0)
