@@ -5,7 +5,7 @@ from pyb import Pin, ADC, Timer
 
 # Key variables --------------------------------------------------
 speed = 50 # standard driving speed
-critdistance = 30 # critical stopping distance in cm
+critdistance = 40 # critical stopping distance in cm
 
 
 # Defining the motor modules--------------------------------------
@@ -32,6 +32,10 @@ end = 0					# timestamp at falling edge of echo
 
 # -----------------------------------------------------------------
 
+def stop():
+	ch1.pulse_width_percent(0) # send a pulse of width 50% to motor1
+	ch2.pulse_width_percent(0) # send a pulse of width 50% to motor2
+
 def drive(speed): # Set direction to forward
 
 	A1.high()
@@ -52,9 +56,7 @@ def preventCollision(speed):
 	 	ch2.pulse_width_percent(speed)
 		pyb.delay(50) # delay for 50 millisec
 
-	# stop
-	ch1.pulse_width_percent(0)
-	ch2.pulse_width_percent(0)
+	stop() # stop
 
 	# reverse both motor direction
 	A1.low()
@@ -63,33 +65,25 @@ def preventCollision(speed):
 	B1.high()
 	B2.low()
 
-	# set motor1: 15%, motor2: 15%
-	# motor direction has already been reversed
-	# pulse width cannot be negative
+	# reversing
 	ch1.pulse_width_percent(40)
 	ch2.pulse_width_percent(40)
+	pyb.delay(750) # run to allow reverse
+	stop()
+	pyb.delay(750)
 
-	# run to allow reverse
-	pyb.delay(3500) # x millisec
-	
 	# reverse one motor direction
 	B1.low()
 	B2.high()
 
-	# turn on the spot 
+	# turn on the spot
 	ch1.pulse_width_percent(40)
 	ch2.pulse_width_percent(40)
+	pyb.delay(500) # run to allow the turn
 
-	# run to allow the turn
-	pyb.delay(800)
-	
-	# stop
-	ch1.pulse_width_percent(0)
-	ch2.pulse_width_percent(0)
+	stop() # stop
+	pyb.delay(500)
 
-	pyb.delay(1000)
-	# run drive(at 50%) func (which should correct the motor direction)
-	drive(50)
 
 drive(speed) # begin the drive
 
@@ -113,5 +107,7 @@ while True: # Distance feedback loop
 
 	if distance <= critdistance:
 		preventCollision(speed)
+	else:
+		drive(50) # run drive(at 50%) func (which should correct the motor direction)
 
-	pyb.delay(500) # delay 500 millisec before repeating loop
+	pyb.delay(250) # delay 500 millisec before repeating loop
