@@ -24,11 +24,13 @@ ch2 = tim.channel(2, Timer.PWM, pin = motor2)
 # Ultrasound Echo Initialising -----------------------------------
 Trigger = Pin('X3', Pin.OUT_PP)
 Echo = Pin('X4',Pin.IN)
+
 # Create a microseconds counter.
-micros = pyb.Timer(5, prescaler=83, period=0x3fffffff)
+micros = pyb.Timer(5, prescaler=83, period=0x3fffffff) #** Use timer 5 instead of 2
 micros.counter(0)
-start = 0				# timestamp at rising edge of echo
-end = 0					# timestamp at falling edge of echo
+
+TIME_OUT_1 = 2000		#** maximum delay for echo signal to go high
+TIME_OUT_2 = 29000		#** maximum pulse width equal 5m distance
 
 # -----------------------------------------------------------------
 
@@ -87,22 +89,30 @@ def preventCollision(speed):
 drive(speed) # begin the drive - first line initiated on boot-up
 
 while True: # Distance feedback loop
-	# Send a 20usec pulse every 10ms
+	# Send a 20usec pulse every 20ms
+	micros.counter(0)	#** reset microsecond counter
 	Trigger.high()
-	pyb.udelay(20) #udelay uses argument in microseconds
+	pyb.udelay(20)
 	Trigger.low()
 
 	# Wait until echo pulse goes from low to high
 	while Echo.value() == 0:
-		start = micros.counter()	# record start time of pulse
+		if micros.counter() > TIME_OUT_1: 	#** maximum wait time is 2ms
+			micros.counter(0)					#** reset microsecond counter
+			Trigger.high()	#** trigger ultrasound sensor again!
+			pyb.udelay(20)
+			Trigger.low()
 
+	micros.counter(0)	#** reset microsecond counter
 	# Wait until echo pulse goes from high to low
 	while Echo.value() == 1:   # do nothing
-		end = micros.counter()		# record end time of pulse
+		pulse_width = micros.counter()		#** record end time of pulse
+		if pulse_width > TIME_OUT_2:		#** check for time out again
+			break			#** waited too long for falling edge
 
 	# Calculate distance from delay duration
-	distance = int(((end - start) / 2) / 29) # distance in cm
-	print('Distance: ', distance, ' cm')
+	distance = int((pulse_width/2) / 29)
+	print('Echo pulse width:', pulse_width, 'Distance: ', distance, ' cm')
 
 	if distance <= critdistance:
 		preventCollision(speed)
