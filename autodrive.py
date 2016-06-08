@@ -6,6 +6,7 @@ from pyb import Pin, ADC, Timer
 # Key variables --------------------------------------------------
 speed = 50 # standard driving speed
 critdistance = 40 # critical stopping distance in cm
+distance = 100 # sets initial distance to stop preventCollision() from running
 
 
 # Defining the motor modules--------------------------------------
