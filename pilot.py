@@ -3,7 +3,7 @@
 print('Initialising Pilot Module')
 print('Version 0.1')
 
-from pyb import Pin, ADC, Timer
+from pyb import Pin, ADC, Timer, UART
 
 # Key global variables
 direction = 'f'
@@ -64,7 +64,7 @@ def direction(direction, speedL, speedR):
         direction = 'b'
         #return 'b'
 
-    print "Direction changed to: %s" % direction
+    print('Direction changed to: ',direction)
     return (direction, speedL, speedR)
 
 def speed(mode, speedL, speedR):
@@ -84,10 +84,10 @@ def speed(mode, speedL, speedR):
 def stop():
     speedL = 0
     speedR = 0
-	A1.low()
-	A2.low()
-	B1.low()
-	B2.low()
+    A1.low()
+    A2.low()
+    B1.low()
+    B2.low()
 
     setspeed(speedL,speedR)
     return (speedL, speedR)
@@ -114,10 +114,9 @@ def turn(turnDirection, speedL, speedR):
 # loop
 # Use keypad controller to control car
 while True:				# loop forever until CTRL-C
-	while (uart.any()!=10):    #wait we get 10 chars
-		n = uart.any()
-	command = uart.read(10)
-
+    while (uart.any()!=10):    #wait we get 10 chars
+        n = uart.any()
+    command = uart.read(10)
     if command[2] == ord('1'): # record
         print('Command not available yet')
 
@@ -140,12 +139,12 @@ while True:				# loop forever until CTRL-C
 
     elif command[2] == ord('5'): # UP pressed
         print('Increasing speed...')
-        (speedL,speedR) = speed(mode=inc,speedL=speedL=,speedR=speedR)
+        (speedL,speedR) = speed(mode=inc,speedL=speedL,speedR=speedR)
         print(speedL,speedR,direction)
 
     elif command[2] == ord('6'): # DOWN PRESSED
         print('Decreasing speed...')
-		(speedL,speedR) = speed(mode=dec,speedL=speedL=,speedR=speedR)
+        (speedL,speedR) = speed(mode=dec,speedL=speedL,speedR=speedR)
         print(speedL,speedR,direction)
 
     elif command[2] == ord('7'): #LEFT PRESSED
@@ -158,6 +157,5 @@ while True:				# loop forever until CTRL-C
         (speedL,speedR) = turn(turnDirection='r',speedL=speedL,speedR=speedR)
         print(speedL,speedR,direction)
 
-	else: # this may cause issues when looping
-		A1.low() # idle
-		A2.low()
+    else: # this may cause issues when looping
+		stop()
