@@ -38,10 +38,8 @@ def start():
         print('- Help Menu -\nHere are the options available to you:')
         print('autodrive')
         print('task5')
-<<<<<<< HEAD
         print('pilot')
-=======
->>>>>>> master
+
 
     elif choice == 'autodrive':
         execfile('autodrive.py')
