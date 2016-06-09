@@ -10,7 +10,7 @@ print('main.py Running')
 def f(): # callback function run when switch is pressed
     global choice
     print('Interrupt occured...')
-    choice = 'autodrive' # sets the 'choice' to 'autodrive' for the user
+    choice = 'pilot' # sets the 'choice' to 'autodrive' for the user
 sw = pyb.Switch()
 sw.callback(f) # callback event if USR switch is pressed
 
