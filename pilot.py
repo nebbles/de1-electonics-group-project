@@ -34,7 +34,7 @@ start = 0				# timestamp at rising edge of echo
 end = 0					# timestamp at falling edge of echo
 
 # -----------------------------------------------------------------
-#initialise UART communication
+# initialise UART communication
 uart = UART(6)
 uart.init(9600, bits=8, parity = None, stop = 2)
 # -----------------------------------------------------------------
@@ -52,6 +52,7 @@ def direction(direction, speedL, speedR):
     	B1.low()
     	B2.high()
 
+        direction = 'f'
         #return 'f'
 
     elif direction == 'b':
@@ -60,34 +61,22 @@ def direction(direction, speedL, speedR):
 
     	B1.high()
     	B2.low()
-
+        direction = 'b'
         #return 'b'
 
     print "Direction changed to: %s" % direction
     return (direction, speedL, speedR)
 
-def speed(direction, mode, speedL, speedR):
-    if direction == 'f':
-        if mode == 'inc':
-            if speedL < 96 and speedR < 96:
-                speedL += 5
-                speedR += 5
+def speed(mode, speedL, speedR):
+    if mode == 'inc':
+        if speedL < 96 and speedR < 96:
+            speedL += 5
+            speedR += 5
 
-        elif mode == 'dec':
-            if speedL > 4 and speedR > 4:
-                speedL -= 5
-                speedR -= 5
-
-    elif direction == 'b':
-        if mode == 'inc':
-            if speedL > -96 and speedR > -96:
-                speedL -= 5
-                speedR -= 5
-
-        elif mode == 'dec':
-            if speedL < -4 and speedR < -4:
-                speedL += 5
-                speedR += 5
+    elif mode == 'dec':
+        if speedL > 4 and speedR > 4:
+            speedL -= 5
+            speedR -= 5
 
     setspeed(speedL,speedR)
     return (speedL,speedR)
@@ -123,7 +112,7 @@ def turn(turnDirection, speedL, speedR):
 
 
 # loop
-# Use keypad U and D keys to control speed
+# Use keypad controller to control car
 while True:				# loop forever until CTRL-C
 	while (uart.any()!=10):    #wait we get 10 chars
 		n = uart.any()
@@ -131,31 +120,44 @@ while True:				# loop forever until CTRL-C
 
     if command[2] == ord('1'): # record
         print('Command not available yet')
+
     elif command[2] == ord('2'): # play
         print('Command not available yet')
+
     elif command[2] == ord('3'): # change direction
+        print('Changing direction...')
         if direction == 'f':
             (direction,speedL,speedR) = direction(direction='b',speedL=speedL,speedR=speedR)
-            print(speedL,speedR,direction)
+            print('SpeedL=',speedL,'SpeedR=',speedR,'Direction=',direction)
         elif direction == 'b':
             (direction,speedL,speedR) = direction(direction='f',speedL=speedL,speedR=speedR)
-            print(speedL,speedR,direction)
+            print('SpeedL=',speedL,'SpeedR=',speedR,'Direction=',direction)
+
     elif command[2] == ord('4'): # emergency stop
+        print('Stopping...')
         (speedL,speedR) = stop()
         print(speedL,speedR)
+
     elif command[2] == ord('5'): # UP pressed
-        (speedL,speedR) = speed(direction,inc,speedL,speedR)
+        print('Increasing speed...')
+        (speedL,speedR) = speed(mode=inc,speedL=speedL=,speedR=speedR)
         print(speedL,speedR,direction)
+
     elif command[2] == ord('6'): # DOWN PRESSED
-		(speedL,speedR) = speed(direction=direction,mode=dec,speedL=speedL=,speedR=speedR)
+        print('Decreasing speed...')
+		(speedL,speedR) = speed(mode=dec,speedL=speedL=,speedR=speedR)
         print(speedL,speedR,direction)
+
     elif command[2] == ord('7'): #LEFT PRESSED
+        print('Turning left...')
         (speedL,speedR) = turn(turnDirection='l',speedL=speedL,speedR=speedR)
         print(speedL,speedR,direction)
 
     elif command[2] == ord('8'): # RIGHT PRESSED
+        print('Turning right...')
         (speedL,speedR) = turn(turnDirection='r',speedL=speedL,speedR=speedR)
         print(speedL,speedR,direction)
-	else:
-		A1.low()		# idle
+
+	else: # this may cause issues when looping
+		A1.low() # idle
 		A2.low()
