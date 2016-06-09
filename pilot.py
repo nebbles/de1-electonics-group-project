@@ -6,7 +6,7 @@ print('Version 0.1')
 from pyb import Pin, ADC, Timer, UART
 
 # Key global variables
-direction = 'f'
+vardirection = 'f'
 speedL = 0
 speedR = 0
 critdistance = 30
@@ -78,59 +78,69 @@ def speed(mode, speedL, speedR):
             speedL -= 5
             speedR -= 5
 
-    setspeed(speedL,speedR)
+    setspeed(speedL=speedL,speedR=speedR)
     return (speedL,speedR)
 
 def stop():
     speedL = 0
     speedR = 0
-    A1.low()
-    A2.low()
-    B1.low()
-    B2.low()
-
     setspeed(speedL,speedR)
     return (speedL, speedR)
 
 def setspeed(speedL,speedR):
-    	ch1.pulse_width_percent(speedL) # send a pulse of width 50% to motor1
-    	ch2.pulse_width_percent(speedR) # send a pulse of width 50% to motor2
+    	ch1.pulse_width_percent(speedR) # send a pulse of width 50% to motor1
+    	ch2.pulse_width_percent(speedL) # send a pulse of width 50% to motor2
 
 def turn(turnDirection, speedL, speedR):
     if turnDirection == 'l':
-        if speedL > 4 and speedR <96:
+        if speedL > 4:
             speedL -= 5
+        if speedR <96:
             speedR += 5
 
     elif turnDirection == 'r':
-        if speedL <96 and speedR >4:
+        if speedL <96:
             speedL += 5
+        if speedR >4:
             speedR -= 5
 
     setspeed(speedL,speedR)
     return (speedL,speedR)
 
+def correctspeed(speedL,speedR):
+    average = (speedL + speedR)/2
+    if average % 5 != 0:
+        average += 2.5
+    speedL = int(average)
+    speedR = int(average)
+    setspeed(speedL,speedR)
+    return (speedL,speedR)
 
 # loop
 # Use keypad controller to control car
+print(vardirection,speedL,speedR)
+
+direction(direction=vardirection,speedL=speedL,speedR=speedR) # call to set motor direction
+
 while True:				# loop forever until CTRL-C
     while (uart.any()!=10):    #wait we get 10 chars
         n = uart.any()
     command = uart.read(10)
     if command[2] == ord('1'): # record
-        print('Command not available yet')
+        print('Correcting motor speeds...')
+        (speedL,speedR) = correctspeed(speedL,speedR)
 
     elif command[2] == ord('2'): # play
         print('Command not available yet')
 
     elif command[2] == ord('3'): # change direction
         print('Changing direction...')
-        if direction == 'f':
-            (direction,speedL,speedR) = direction(direction='b',speedL=speedL,speedR=speedR)
-            print('SpeedL=',speedL,'SpeedR=',speedR,'Direction=',direction)
-        elif direction == 'b':
-            (direction,speedL,speedR) = direction(direction='f',speedL=speedL,speedR=speedR)
-            print('SpeedL=',speedL,'SpeedR=',speedR,'Direction=',direction)
+        if vardirection == 'f':
+            (vardirection,speedL,speedR) = direction(direction='b',speedL=speedL,speedR=speedR)
+            print('SpeedL=',speedL,'SpeedR=',speedR,'Direction=',vardirection)
+        elif vardirection == 'b':
+            (vardirection,speedL,speedR) = direction(direction='f',speedL=speedL,speedR=speedR)
+            print('SpeedL=',speedL,'SpeedR=',speedR,'Direction=',vardirection)
 
     elif command[2] == ord('4'): # emergency stop
         print('Stopping...')
@@ -139,23 +149,23 @@ while True:				# loop forever until CTRL-C
 
     elif command[2] == ord('5'): # UP pressed
         print('Increasing speed...')
-        (speedL,speedR) = speed(mode=inc,speedL=speedL,speedR=speedR)
-        print(speedL,speedR,direction)
+        (speedL,speedR) = speed(mode='inc',speedL=speedL,speedR=speedR)
+        print(speedL,speedR,vardirection)
 
     elif command[2] == ord('6'): # DOWN PRESSED
         print('Decreasing speed...')
-        (speedL,speedR) = speed(mode=dec,speedL=speedL,speedR=speedR)
-        print(speedL,speedR,direction)
+        (speedL,speedR) = speed(mode='dec',speedL=speedL,speedR=speedR)
+        print(speedL,speedR,vardirection)
 
     elif command[2] == ord('7'): #LEFT PRESSED
         print('Turning left...')
         (speedL,speedR) = turn(turnDirection='l',speedL=speedL,speedR=speedR)
-        print(speedL,speedR,direction)
+        print(speedL,speedR,vardirection)
 
     elif command[2] == ord('8'): # RIGHT PRESSED
         print('Turning right...')
         (speedL,speedR) = turn(turnDirection='r',speedL=speedL,speedR=speedR)
-        print(speedL,speedR,direction)
+        print(speedL,speedR,vardirection)
 
-    else: # this may cause issues when looping
-		stop()
+    # else: # this may cause issues when looping
+	# 	stop()
