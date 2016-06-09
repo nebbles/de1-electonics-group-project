@@ -10,7 +10,8 @@ print('main.py Running')
 def f(): # callback function run when switch is pressed
     global choice
     print('Interrupt occured...')
-    choice = 'autodrive' # sets the 'choice' to 'autodrive' for the user
+    choice = 'pilot' # sets the 'choice' to 'autodrive' for the user
+
 sw = pyb.Switch()
 sw.callback(f) # callback event if USR switch is pressed
 
@@ -37,12 +38,19 @@ def start():
         print('- Help Menu -\nHere are the options available to you:')
         print('autodrive')
         print('task5')
+<<<<<<< HEAD
+        print('pilot')
+=======
+>>>>>>> master
 
     elif choice == 'autodrive':
         execfile('autodrive.py')
 
     elif choice == 'task5':
         execfile('lab4/task5.py')
+
+    elif choice == 'pilot':
+        execfile('pilot.py')
 
     else:
         print('You did not type a valid mode name. Please try again, or try typing help')
