@@ -5,11 +5,33 @@
 
 import machine
 import pyb
-
 print('main.py Running')
 
+def f(): # callback function run when switch is pressed
+    global choice
+    print('Interrupt occured...')
+    choice = 'autodrive' # sets the 'choice' to 'autodrive' for the user
+sw = pyb.Switch()
+sw.callback(f) # callback event if USR switch is pressed
+
+choice = '' # declares 'choice' as initially empty
+isRepeat = False
+
 def start():
-    choice = input('Type mode: ')
+    global choice
+    global isRepeat
+
+    if isRepeat == False: # if this has been run once already since startup, then skip to else
+        try:
+            print('To use in computer mode - press Ctrl+C')
+            while True:
+                if choice != '': # if callback changes 'choice' then break and run the rest of start()
+                    break
+        except KeyboardInterrupt: # on a computer - above code can be broken
+            isRepeat = True # this code has been run once already
+            choice = input('Type mode: ') # first time prompt for keyboard input
+    else:
+        choice = input('Type mode: ') # if the user needs to provide input again
 
     if choice == 'help':
         print('- Help Menu -\nHere are the options available to you:')
