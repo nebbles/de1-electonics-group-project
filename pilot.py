@@ -112,38 +112,38 @@ def decompile():
             setspeed(speedL=line[1],speedR=line[2])
 
         elif line[0] == 'setDirectionForward':
+            pyb.delay(durationList[repetition])
             print('undoing setDirectionForward')
             direction(direction='b',speedL=line[1],speedR=line[2])
-            pyb.delay(durationList[repetition])
 
         elif line[0] == 'setDirectionBack':
+            pyb.delay(durationList[repetition])
             print('undoing setDirectionBack')
             direction(direction='f',speedL=line[1],speedR=line[2])
-            pyb.delay(durationList[repetition])
 
         elif line[0] == 'speedUp':
+            pyb.delay(durationList[repetition])
             print('undoing increased speed...')
             speed(mode='dec',speedL=line[1],speedR=line[2])
             print(line[1],line[2],'duration',durationList[repetition])
-            pyb.delay(durationList[repetition])
 
         elif line[0] == 'speedDown':
+            pyb.delay(durationList[repetition])
             print('undoing decreased speed')
             speed(mode='inc',speedL=line[1],speedR=line[2])
             print(line[1],line[2],'duration',durationList[repetition])
-            pyb.delay(durationList[repetition])
 
         elif line[0] == 'turnL':
+            pyb.delay(durationList[repetition])
             print('undoing turn left')
             turn(turnDirection='r',speedL=line[1],speedR=line[2])
             print(line[1],line[2],'duration',durationList[repetition])
-            pyb.delay(durationList[repetition])
 
         elif line[0] == 'turnR':
+            pyb.delay(durationList[repetition])
             print('undoing turn right')
             turn(turnDirection='l',speedL=line[1],speedR=line[2])
             print(line[1],line[2],'duration',durationList[repetition])
-            pyb.delay(durationList[repetition])
 
         repetition += 1 # increase for-loop index
     print('Decompile has completed')
@@ -240,7 +240,7 @@ while True:				# loop forever until CTRL-C
         n = uart.any()
     command = uart.read(10)
     if command[2] == ord('1'): # record
-        print('Recording has been toggled.')
+        print('Recording has been pressed.')
         if isRecording == False and speedL == 0 and speedR == 0:
             isRecording = True
 
@@ -248,7 +248,7 @@ while True:				# loop forever until CTRL-C
             commandList = [] # wipe list
             print('Journey memory wiped.')
             print('Recording enabled.')
-        elif isRecording == True:
+        elif isRecording == True and speedL == 0 and speedR == 0:
             timelog = pyb.elapsed_millis(start)
             duration = timelog - previousTime
             durationList.append(duration) # record time from previous command
@@ -264,6 +264,8 @@ while True:				# loop forever until CTRL-C
             print(durationList)
 
             print('Recording disabled')
+        else:
+            print('There was a problem: could not toggle recording as car must be stationary')
 
     elif command[2] == ord('2'): # retrace
         print('Retrace requested')
