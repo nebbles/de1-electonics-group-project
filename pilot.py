@@ -85,6 +85,10 @@ def decompile():
 
     repetition = 0 # keep track of for-loop index
     for line in commandList:
+        # command = uart.read() # read any button press that may have occured
+        # if command[2] == ord('2'): # retrace button pressed again
+        #     print('retrace pressed during playback')
+
         if line[0] == 'correctspeed':
             print('read correctspeed command')
             pyb.delay(durationList[repetition])
@@ -261,7 +265,7 @@ while True:				# loop forever until CTRL-C
 
             print('Recording disabled')
 
-    elif command[2] == ord('2'): # play
+    elif command[2] == ord('2'): # retrace
         print('Retrace requested')
         if isRecording == True:
             print('Cannot retrace route - recording still enabled.')
