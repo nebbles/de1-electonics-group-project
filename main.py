@@ -1,7 +1,6 @@
 # DE-EA1.3 Electronics Group Project
 # Init on 27 May 2016
 # Authors: Benedict Greenberg
-# Version: 2.0
 
 import machine
 import pyb
