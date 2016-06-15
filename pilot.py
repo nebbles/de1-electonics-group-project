@@ -1,7 +1,7 @@
 # Pilot script to control robot via bluetooth
 
 print('Initialising Pilot Module')
-print('Version 0.1')
+print('Version 2.1')
 
 from pyb import Pin, ADC, Timer, UART
 

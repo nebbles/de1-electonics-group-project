@@ -1,11 +1,20 @@
 # DE-EA1.3 Electronics Group Project
 # Init on 27 May 2016
 # Authors: Benedict Greenberg
-# Version: 0.2
+# Version: 2.0
 
 import machine
 from pyb import *
-print('main.py Running')
+
+print('''
+DE-EA1.3 Electronics Group Project
+Init on 27 May 2016
+Authors:
+    Benedict Greenberg
+    Felix Crowther
+
+Version 2.0
+''')
 
 def f(): # callback function run when switch is pressed
     global choice
