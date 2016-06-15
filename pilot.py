@@ -1,9 +1,9 @@
 # Pilot script to control robot via bluetooth
 
 print('Initialising Pilot Module')
-print('Version 2.1')
+print('Version 3.0 BETA (Servo)')
 
-from pyb import Pin, ADC, Timer, UART
+from pyb import Pin, ADC, Timer, UART, Servo
 
 # Key global variables
 vardirection = 'f'
@@ -13,6 +13,14 @@ critdistance = 30
 
 bLED = Pin('X12', Pin.OUT_PP) # Blue LED to indicate recording
 bLED.low()
+
+# Defining the servo--------------------------------------
+servo = Servo(3) # servo on position 3 (X3, VIN, GND)
+def servoSet():
+    servo.angle(-45) # move to set position
+def servoRelease():
+    servo.angle(90) # move to the release position
+servoSet() # initially arm the servo
 
 # Defining the motor modules--------------------------------------
 A1 = Pin('Y9',Pin.OUT_PP)
@@ -28,13 +36,13 @@ ch1 = tim.channel(1, Timer.PWM, pin = motor1)
 ch2 = tim.channel(2, Timer.PWM, pin = motor2)
 
 # Ultrasound Echo Initialising -----------------------------------
-Trigger = Pin('X3', Pin.OUT_PP)
-Echo = Pin('X4',Pin.IN)
-# Create a microseconds counter.
-micros = pyb.Timer(5, prescaler=83, period=0x3fffffff)
-micros.counter(0)
-start = 0				# timestamp at rising edge of echo
-end = 0					# timestamp at falling edge of echo
+# Trigger = Pin('X3', Pin.OUT_PP)
+# Echo = Pin('X4',Pin.IN)
+# # Create a microseconds counter.
+# micros = pyb.Timer(5, prescaler=83, period=0x3fffffff)
+# micros.counter(0)
+# start = 0				# timestamp at rising edge of echo
+# end = 0					# timestamp at falling edge of echo
 
 # -----------------------------------------------------------------
 # initialise UART communication
@@ -285,10 +293,15 @@ while True:				# loop forever until CTRL-C
             print('Journey memory wiped.')
 
     elif command[2] == ord('3'): # straigten travel direction
-        if isRecording == True:
-            record(['correctspeed',speedL,speedR])
-        print('Correcting motor speeds...')
-        (speedL,speedR) = correctspeed(speedL,speedR)
+        if speedL == 0 and speedR == 0:
+            servoRelease() # servo release and reset
+            pyb.delay(500)
+            servoSet()
+        else:
+            if isRecording == True:
+                record(['correctspeed',speedL,speedR])
+            print('Correcting motor speeds...')
+            (speedL,speedR) = correctspeed(speedL,speedR)
 
     elif command[2] == ord('4'): # emergency stop / change direction
         print('Stopping...or changing direction...')

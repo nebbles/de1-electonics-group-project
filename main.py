@@ -1,21 +1,20 @@
 # DE-EA1.3 Electronics Group Project
 # Init on 27 May 2016
 # Authors: Benedict Greenberg
-# Version: 2.0
 
 import machine
 from pyb import *
 
 print('''
 DE-EA1.3 Electronics Group Project
-Init on 27 May 2016
+Initialised on 27 May 2016
 Authors:
     Benedict Greenberg
     Felix Crowther
     Grace Chin
     Fan Mo
 
-Version 2.0
+Main.py -- Version 1.3
 ''')
 
 def f(): # callback function run when switch is pressed
@@ -50,7 +49,8 @@ def start():
         print('autodrive')
         print('task5')
         print('pilot')
-
+        print('led')
+        print('servo')
 
     elif choice == 'autodrive':
         execfile('autodrive.py')
