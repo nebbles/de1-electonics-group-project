@@ -12,6 +12,8 @@ Init on 27 May 2016
 Authors:
     Benedict Greenberg
     Felix Crowther
+    Grace Chin
+    Fan Mo
 
 Version 2.0
 ''')
@@ -62,6 +64,12 @@ def start():
     elif choice == 'led':
         bLED = Pin('X12', Pin.OUT_PP)
         bLED.high()
+
+    elif choice == 'servo':
+        s1 = Servo(3) # servo on position 3 (X3, VIN, GND)
+        while True:
+            angle = int(input('Angle: '))
+            s1.angle(angle) # move to user defined angle
 
     else:
         print('You did not type a valid mode name. Please try again, or try typing help')
