@@ -4,7 +4,7 @@
 # Version: 0.2
 
 import machine
-import pyb
+from pyb import *
 print('main.py Running')
 
 def f(): # callback function run when switch is pressed
@@ -49,6 +49,10 @@ def start():
 
     elif choice == 'pilot':
         execfile('pilot.py')
+
+    elif choice == 'led':
+        bLED = Pin('X12', Pin.OUT_PP)
+        bLED.high()
 
     else:
         print('You did not type a valid mode name. Please try again, or try typing help')

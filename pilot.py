@@ -11,6 +11,9 @@ speedL = 0
 speedR = 0
 critdistance = 30
 
+bLED = Pin('X12', Pin.OUT_PP) # Blue LED to indicate recording
+bLED.low()
+
 # Defining the motor modules--------------------------------------
 A1 = Pin('Y9',Pin.OUT_PP)
 A2 = Pin('Y10',Pin.OUT_PP)
@@ -243,6 +246,7 @@ while True:				# loop forever until CTRL-C
         print('Recording has been pressed.')
         if isRecording == False and speedL == 0 and speedR == 0:
             isRecording = True
+            bLED.high()
 
             durationList = [] # wipe list
             commandList = [] # wipe list
@@ -253,6 +257,7 @@ while True:				# loop forever until CTRL-C
             duration = timelog - previousTime
             durationList.append(duration) # record time from previous command
             isRecording = False
+            bLED.low()
 
             print(commandList)
             print(durationList)
@@ -275,6 +280,9 @@ while True:				# loop forever until CTRL-C
         elif isRecording == False and speedL == 0 and speedR == 0:
             print('Retracing route...')
             decompile() # run decompiler
+            durationList = [] # wipe list
+            commandList = [] # wipe list
+            print('Journey memory wiped.')
 
     elif command[2] == ord('3'): # straigten travel direction
         if isRecording == True:
