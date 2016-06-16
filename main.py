@@ -3,8 +3,19 @@
 # Authors: Benedict Greenberg
 
 import machine
-import pyb
-print('main.py Running')
+from pyb import *
+
+print('''
+DE-EA1.3 Electronics Group Project
+Init on 27 May 2016
+Authors:
+    Benedict Greenberg
+    Felix Crowther
+    Grace Chin
+    Fan Mo
+
+Main.py -- Version 1.3
+''')
 
 def f(): # callback function run when switch is pressed
     global choice
@@ -49,6 +60,16 @@ def start():
 
     elif choice == 'pilot':
         execfile('pilot.py')
+
+    elif choice == 'led':
+        bLED = Pin('X12', Pin.OUT_PP)
+        bLED.high()
+
+    elif choice == 'servo':
+        s1 = Servo(3) # servo on position 3 (X3, VIN, GND)
+        while True:
+            angle = int(input('Angle: '))
+            s1.angle(angle) # move to user defined angle
 
     else:
         print('You did not type a valid mode name. Please try again, or try typing help')

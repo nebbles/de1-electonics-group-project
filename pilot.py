@@ -1,7 +1,7 @@
 # Pilot script to control robot via bluetooth
 
 print('Initialising Pilot Module')
-print('Version 0.1')
+print('Version 2.1')
 
 from pyb import Pin, ADC, Timer, UART
 
@@ -10,6 +10,9 @@ vardirection = 'f'
 speedL = 0
 speedR = 0
 critdistance = 30
+
+bLED = Pin('X12', Pin.OUT_PP) # Blue LED to indicate recording
+bLED.low()
 
 # Defining the motor modules--------------------------------------
 A1 = Pin('Y9',Pin.OUT_PP)
@@ -37,6 +40,119 @@ end = 0					# timestamp at falling edge of echo
 # initialise UART communication
 uart = UART(6)
 uart.init(9600, bits=8, parity = None, stop = 2)
+
+# -----------------------------------------------------------------
+# initialise recording and traceback
+
+isFirstCommand = True # used for when recording first starts
+isRecording = False # helps to control pod
+previousTime = 0 # init a previous time variable to store in between commands
+durationList = [] # list of durations related to commandList
+commandList = [] # list of commands
+
+start = pyb.millis() # init a timer before operation begins
+
+def record(command):
+    global isFirstCommand
+    global previousTime
+    global durationList
+    global commandList
+    global start
+
+    timelog = pyb.elapsed_millis(start) # get the latest elapsed time
+
+    if isFirstCommand == True:
+        commandList.append(command) # add first command to list
+        previousTime = timelog # time that first command began
+        isFirstCommand = False # first command has been recorded
+
+    elif isFirstCommand == False:
+        duration = timelog - previousTime # calculate duration since last command
+        durationList.append(duration) # record time from previous command
+        previousTime = timelog # update the previous time for the next command
+        commandList.append(command) # record the command
+
+def decompile():
+    print('Running decoder...')
+    global durationList # list of durations
+    global commandList # list of [commandName,(speedL),(speedR),(vardirection)]
+
+    global vardirection
+    global speedL
+    global speedR
+
+    if vardirection == 'f': # reverses the direction of the motors to retrace
+        vardirection = 'b'
+    elif vardirection == 'b':
+        vardirection = 'f'
+
+    repetition = 0 # keep track of for-loop index
+    for line in commandList:
+        # command = uart.read() # read any button press that may have occured
+        # if command[2] == ord('2'): # retrace button pressed again
+        #     print('retrace pressed during playback')
+
+        if line[0] == 'correctspeed':
+            print('read correctspeed command')
+            pyb.delay(durationList[repetition])
+            print('undoing average speed')
+            setspeed(speedL=line[1],speedR=line[2])
+            print('speedL',line[1],'speedR',line[2])
+            print('duration',durationList[repetition])
+
+        elif line[0] == 'stop':
+            print('stop instruction read...delaying...')
+            pyb.delay(durationList[repetition])
+            print('undoing stop instruction')
+
+            # set speed in opposite direction to current
+            if line[3] == 'f':
+                reversedDirection = 'b'
+            elif line[3] == 'b':
+                reversedDirection = 'f'
+
+            direction(direction=reversedDirection,speedL=0,speedR=0)
+            setspeed(speedL=line[1],speedR=line[2])
+
+        elif line[0] == 'setDirectionForward':
+            pyb.delay(durationList[repetition])
+            print('undoing setDirectionForward')
+            direction(direction='b',speedL=line[1],speedR=line[2])
+
+        elif line[0] == 'setDirectionBack':
+            pyb.delay(durationList[repetition])
+            print('undoing setDirectionBack')
+            direction(direction='f',speedL=line[1],speedR=line[2])
+
+        elif line[0] == 'speedUp':
+            pyb.delay(durationList[repetition])
+            print('undoing increased speed...')
+            speed(mode='dec',speedL=line[1],speedR=line[2])
+            print(line[1],line[2],'duration',durationList[repetition])
+
+        elif line[0] == 'speedDown':
+            pyb.delay(durationList[repetition])
+            print('undoing decreased speed')
+            speed(mode='inc',speedL=line[1],speedR=line[2])
+            print(line[1],line[2],'duration',durationList[repetition])
+
+        elif line[0] == 'turnL':
+            pyb.delay(durationList[repetition])
+            print('undoing turn left')
+            turn(turnDirection='r',speedL=line[1],speedR=line[2])
+            print(line[1],line[2],'duration',durationList[repetition])
+
+        elif line[0] == 'turnR':
+            pyb.delay(durationList[repetition])
+            print('undoing turn right')
+            turn(turnDirection='l',speedL=line[1],speedR=line[2])
+            print(line[1],line[2],'duration',durationList[repetition])
+
+        repetition += 1 # increase for-loop index
+    print('Decompile has completed')
+    (vardirection,speedL,speedR) = direction(direction='f',speedL=0,speedR=0) # return to defaults
+    print('Default settings returned.')
+    print('Direction:',vardirection,'speedL:',speedL,'speedR:',speedR)
 # -----------------------------------------------------------------
 
 def direction(direction, speedL, speedR):
@@ -127,45 +243,108 @@ while True:				# loop forever until CTRL-C
         n = uart.any()
     command = uart.read(10)
     if command[2] == ord('1'): # record
+        print('Recording has been pressed.')
+        if isRecording == False and speedL == 0 and speedR == 0:
+            isRecording = True
+            bLED.high()
+
+            durationList = [] # wipe list
+            commandList = [] # wipe list
+            print('Journey memory wiped.')
+            print('Recording enabled.')
+        elif isRecording == True and speedL == 0 and speedR == 0:
+            timelog = pyb.elapsed_millis(start)
+            duration = timelog - previousTime
+            durationList.append(duration) # record time from previous command
+            isRecording = False
+            bLED.low()
+
+            print(commandList)
+            print(durationList)
+
+            durationList.reverse()
+            commandList.reverse()
+
+            print(commandList)
+            print(durationList)
+
+            print('Recording disabled')
+        else:
+            print('There was a problem: could not toggle recording as car must be stationary')
+
+    elif command[2] == ord('2'): # retrace
+        print('Retrace requested')
+        if isRecording == True:
+            print('Cannot retrace route - recording still enabled.')
+            pass
+        elif isRecording == False and speedL == 0 and speedR == 0:
+            print('Retracing route...')
+            decompile() # run decompiler
+            durationList = [] # wipe list
+            commandList = [] # wipe list
+            print('Journey memory wiped.')
+
+    elif command[2] == ord('3'): # straigten travel direction
+        if isRecording == True:
+            record(['correctspeed',speedL,speedR])
         print('Correcting motor speeds...')
         (speedL,speedR) = correctspeed(speedL,speedR)
 
-    elif command[2] == ord('2'): # play
-        print('Command not available yet')
-
-    elif command[2] == ord('3'): # change direction
-        print('Changing direction...')
-        if vardirection == 'f':
-            (vardirection,speedL,speedR) = direction(direction='b',speedL=speedL,speedR=speedR)
-            print('SpeedL=',speedL,'SpeedR=',speedR,'Direction=',vardirection)
-        elif vardirection == 'b':
-            (vardirection,speedL,speedR) = direction(direction='f',speedL=speedL,speedR=speedR)
-            print('SpeedL=',speedL,'SpeedR=',speedR,'Direction=',vardirection)
-
-    elif command[2] == ord('4'): # emergency stop
-        print('Stopping...')
-        (speedL,speedR) = stop()
+    elif command[2] == ord('4'): # emergency stop / change direction
+        print('Stopping...or changing direction...')
+        if speedL==0 and speedR==0:
+            # change direction
+            print('Changing direction...')
+            if vardirection == 'f':
+                if isRecording == True:
+                    record(['setDirectionBack',speedL,speedR])
+                (vardirection,speedL,speedR) = direction(direction='b',speedL=speedL,speedR=speedR)
+                print('SpeedL=',speedL,'SpeedR=',speedR,'Direction=',vardirection)
+            elif vardirection == 'b':
+                if isRecording == True:
+                    record(['setDirectionForward',speedL,speedR])
+                (vardirection,speedL,speedR) = direction(direction='f',speedL=speedL,speedR=speedR)
+                print('SpeedL=',speedL,'SpeedR=',speedR,'Direction=',vardirection)
+        else:
+            if isRecording == True:
+                record(['stop',speedL,speedR,vardirection])
+            print('Stopping...')
+            (speedL,speedR) = stop()
         print(speedL,speedR)
 
     elif command[2] == ord('5'): # UP pressed
         print('Increasing speed...')
         (speedL,speedR) = speed(mode='inc',speedL=speedL,speedR=speedR)
         print(speedL,speedR,vardirection)
+        if isRecording == True:
+            record(['speedUp',speedL,speedR])
 
     elif command[2] == ord('6'): # DOWN PRESSED
         print('Decreasing speed...')
         (speedL,speedR) = speed(mode='dec',speedL=speedL,speedR=speedR)
         print(speedL,speedR,vardirection)
+        if isRecording == True:
+            record(['speedDown',speedL,speedR])
 
     elif command[2] == ord('7'): #LEFT PRESSED
         print('Turning left...')
         (speedL,speedR) = turn(turnDirection='l',speedL=speedL,speedR=speedR)
         print(speedL,speedR,vardirection)
+        if isRecording == True:
+            record(['turnL',speedL,speedR])
 
     elif command[2] == ord('8'): # RIGHT PRESSED
         print('Turning right...')
         (speedL,speedR) = turn(turnDirection='r',speedL=speedL,speedR=speedR)
         print(speedL,speedR,vardirection)
+        if isRecording == True:
+            record(['turnR',speedL,speedR])
 
-    # else: # this may cause issues when looping
-	# 	stop()
+    else: # writing to the robot with UART
+        message = 'command not understood'
+        print(message)
+        print(command)
+        for i in range(22):
+    		uart.writechar(ord(message[i]))
+    	uart.writechar(13)
+    	uart.writechar(10)
