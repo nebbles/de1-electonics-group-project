@@ -1,7 +1,7 @@
 # Pilot script to control robot via bluetooth
 
 print('Initialising Pilot Module')
-print('Version 3.0 BETA (Servo)')
+print('Version 3.0')
 
 from pyb import Pin, ADC, Timer, UART, Servo
 
@@ -10,9 +10,19 @@ vardirection = 'f'
 speedL = 0
 speedR = 0
 critdistance = 30
+canCelebrate = False
 
-bLED = Pin('X12', Pin.OUT_PP) # Blue LED to indicate recording
-bLED.low()
+bLED = Pin('X12', Pin.OUT_PP) # Blue LED // indicate recording
+yLED = Pin('X11', Pin.OUT_PP) # Yellow LED // indicate kicking process
+rLED = Pin('X10', Pin.OUT_PP) # Red LED // indicate playback
+led1 = pyb.LED(1) # Red system LED // indicate playback
+led2 = pyb.LED(2) # Green system LED // indicate forward travel
+led3 = pyb.LED(3) # Yello system LED // indicate backward travel
+led4 = pyb.LED(4) # Blue system LED // indicate recording
+
+bLED.low() # initially turned off
+yLED.low()
+rLED.low()
 
 # Defining the servo--------------------------------------
 servo = Servo(3) # servo on position 3 (X3, VIN, GND)
@@ -178,6 +188,8 @@ def direction(direction, speedL, speedR):
 
         direction = 'f'
         #return 'f'
+        led2.on() # green on
+        led3.off() # yellow off
 
     elif direction == 'b':
     	A1.low()
@@ -187,6 +199,8 @@ def direction(direction, speedL, speedR):
     	B2.low()
         direction = 'b'
         #return 'b'
+        led2.off() # green off
+        led3.on() # yellow on
 
     print('Direction changed to: ',direction)
     return (direction, speedL, speedR)
@@ -240,6 +254,66 @@ def correctspeed(speedL,speedR):
     setspeed(speedL,speedR)
     return (speedL,speedR)
 
+def toggleLED(led):
+    if led == 'r':
+        if rLED.value() == 0:
+            rLED.high()
+        elif rLED.value() == 1:
+            rLED.low()
+    elif led == 'y':
+        if yLED.value() == 0:
+            yLED.high()
+        elif yLED.value() == 1:
+            yLED.low()
+    elif led == 'b':
+        if bLED.value() == 0:
+            bLED.high()
+        elif bLED.value() == 1:
+            bLED.low()
+
+def celebrate():
+    flash = 0
+
+    rLED.high()
+    yLED.high()
+    bLED.high()
+    led1.on()
+    led2.on()
+    led3.on()
+    led4.on()
+    direction(direction='f',speedL=0,speedR=0)
+    setspeed(speedL=70,speedR=0)
+    while flash < 500:
+        flash += 1
+        pyb.delay(20)
+
+        num1 = pyb.rng()%5 # random number 0..4
+        if num1 == 1:
+            led1.toggle()
+        elif num1 == 2:
+            led2.toggle()
+        elif num1 == 3:
+            led3.toggle()
+        elif num1 == 4:
+            led4.toggle()
+
+        num2 = pyb.rng()%4 # random number 0..3
+        if num2 == 1:
+            toggleLED('r')
+        elif num2 == 2:
+            toggleLED('y')
+        elif num2 == 3:
+            toggleLED('b')
+
+    stop()
+    rLED.low()
+    yLED.low()
+    bLED.low()
+    led1.off()
+    led2.off()
+    led3.off()
+    led4.off()
+
 # loop
 # Use keypad controller to control car
 print(vardirection,speedL,speedR)
@@ -255,6 +329,7 @@ while True:				# loop forever until CTRL-C
         if isRecording == False and speedL == 0 and speedR == 0:
             isRecording = True
             bLED.high()
+            led4.on()
 
             durationList = [] # wipe list
             commandList = [] # wipe list
@@ -266,6 +341,7 @@ while True:				# loop forever until CTRL-C
             durationList.append(duration) # record time from previous command
             isRecording = False
             bLED.low()
+            led4.off()
 
             print(commandList)
             print(durationList)
@@ -287,16 +363,34 @@ while True:				# loop forever until CTRL-C
             pass
         elif isRecording == False and speedL == 0 and speedR == 0:
             print('Retracing route...')
+            rLED.high()
+            led1.on()
             decompile() # run decompiler
+            rLED.low()
+            led1.off()
             durationList = [] # wipe list
             commandList = [] # wipe list
             print('Journey memory wiped.')
 
     elif command[2] == ord('3'): # straigten travel direction
-        if speedL == 0 and speedR == 0:
-            servoRelease() # servo release and reset
-            pyb.delay(500)
-            servoSet()
+        if speedL == 0 and speedR == 0: # kicking movement
+            if canCelebrate == False:
+                yLED.high()
+                direction(direction='b',speedL=0,speedR=0)
+                setspeed(speedL=50,speedR=50)
+                pyb.delay(700)
+                direction(direction='f',speedL=0,speedR=0)
+                setspeed(speedL=50,speedR=50)
+                pyb.delay(775)
+                stop()
+
+                servoRelease() # servo release and reset
+                pyb.delay(500)
+                servoSet()
+                canCelebrate = True
+                yLED.low()
+            elif canCelebrate == True:
+                celebrate()
         else:
             if isRecording == True:
                 record(['correctspeed',speedL,speedR])
@@ -305,19 +399,21 @@ while True:				# loop forever until CTRL-C
 
     elif command[2] == ord('4'): # emergency stop / change direction
         print('Stopping...or changing direction...')
-        if speedL==0 and speedR==0:
-            # change direction
+        if speedL==0 and speedR==0: # change direction
             print('Changing direction...')
+            canCelebrate = False
             if vardirection == 'f':
                 if isRecording == True:
                     record(['setDirectionBack',speedL,speedR])
                 (vardirection,speedL,speedR) = direction(direction='b',speedL=speedL,speedR=speedR)
                 print('SpeedL=',speedL,'SpeedR=',speedR,'Direction=',vardirection)
+
             elif vardirection == 'b':
                 if isRecording == True:
                     record(['setDirectionForward',speedL,speedR])
                 (vardirection,speedL,speedR) = direction(direction='f',speedL=speedL,speedR=speedR)
                 print('SpeedL=',speedL,'SpeedR=',speedR,'Direction=',vardirection)
+
         else:
             if isRecording == True:
                 record(['stop',speedL,speedR,vardirection])
