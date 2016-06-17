@@ -377,10 +377,10 @@ while True:				# loop forever until CTRL-C
             if canCelebrate == False:
                 yLED.high()
                 direction(direction='b',speedL=0,speedR=0)
-                setspeed(speedL=50,speedR=50)
+                setspeed(speedL=30,speedR=40)
                 pyb.delay(700)
                 direction(direction='f',speedL=0,speedR=0)
-                setspeed(speedL=50,speedR=50)
+                setspeed(speedL=30,speedR=40)
                 pyb.delay(775)
                 stop()
 
