@@ -206,15 +206,16 @@ def direction(direction, speedL, speedR):
     return (direction, speedL, speedR)
 
 def speed(mode, speedL, speedR):
+    increment = 5
     if mode == 'inc':
-        if speedL < 96 and speedR < 96:
-            speedL += 5
-            speedR += 5
+        if speedL < (101-increment) and speedR < (101-increment):
+            speedL += increment
+            speedR += increment
 
     elif mode == 'dec':
-        if speedL > 4 and speedR > 4:
-            speedL -= 5
-            speedR -= 5
+        if speedL > (increment - 1) and speedR > (increment - 1):
+            speedL -= increment
+            speedR -= increment
 
     setspeed(speedL=speedL,speedR=speedR)
     return (speedL,speedR)
